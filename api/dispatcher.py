@@ -19,7 +19,7 @@ class ImmediateDispatcher(Dispatcher):
     ImmediateDispatcher class to handle immediate requests.
     """
     
-    def __init__(self, arq: ArqRedis, redis_client: Redis):
+    def __init__(self, arq: ArqRedis, redis_client: Redis, inflight_key: str = "arq:jobs:inflight"):
         """
         Initialize the ImmediateDispatcher with a Redis client.
 
@@ -28,6 +28,7 @@ class ImmediateDispatcher(Dispatcher):
         """
         self.arq = arq
         self.redis_client = redis_client
+        self.inflight_key = inflight_key
     
     async def dispatch(self, task_name: str, task_data: dict):
         """
@@ -37,4 +38,6 @@ class ImmediateDispatcher(Dispatcher):
         job = await self.arq.enqueue_job(task_name, task_data)
         
         # Add the job ID to the inflight set
-        await self.redis_client.sadd('arq:jobs:inflight', job.job_id)
+        await self.redis_client.sadd(self.inflight_key, job.job_id)
+        
+        
