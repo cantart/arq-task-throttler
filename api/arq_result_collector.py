@@ -1,7 +1,6 @@
 import asyncio
 from typing import Awaitable, Callable, Optional
 
-import arq
 import redis.asyncio as redis
 from arq.jobs import Job, JobStatus
 
