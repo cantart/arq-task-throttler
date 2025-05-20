@@ -26,9 +26,7 @@ class ConcurrencyAwareArqDispatcher:
         concurrency_dimensions = task_metadata.get("_concurrency_dimensions", [])
         
         # Tracking key across all dispatcher instances
-        for dimension in concurrency_dimensions:
-            # Increase by the dimension
-            await self.redis_client.incrby(f"dispatcher:concurrency:{dimension}")
+        self.increse_concurrency(concurrency_dimensions)
             
         # Dispatch the task immediately
         job = await self.arq.enqueue_job(task_name, task_data, task_metadata)
