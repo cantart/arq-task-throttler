@@ -8,5 +8,6 @@ RUN pip install --no-cache-dir --upgrade -r /worker/requirements.txt
 
 COPY . /worker/
 
-# Run the worker using arq demo.WorkerSettings --watch path/to/src
-CMD ["arq", "main.WorkerSettings", "--watch", "/worker"]
+ENV PYTHONPATH=/worker
+
+CMD ["arq", "main.WorkerSettings", "--watch", "."]

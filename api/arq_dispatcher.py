@@ -1,66 +1,53 @@
-from abc import ABC, abstractmethod
-
 from arq import ArqRedis
 from redis import Redis
 
 
-class ConcurrencyAwareDispatcher(ABC):
+class ConcurrencyAwareArqDispatcher:
     """
-    ConcurrencyAwareDispatcher class to handle concurrent requests.
+    ConcurrencyAwareArqDispatcher class to handle concurrent requests.
     """
-    def __init__(self, redis_client: Redis, inflight_key: str = "arq:jobs:inflight"):
+    def __init__(self, arq: ArqRedis, redis_client: Redis, inflight_key: str = "arq:jobs:inflight"):
         """
         Initialize the dispatcher with a Redis client.
 
         Args:
+            arq (ArqRedis): The Arq Redis client instance.
             redis_client (Redis): The Redis client instance.
             inflight_key (str): The key for inflight jobs in Redis.
         """
+        self.arq = arq
         self.redis_client = redis_client
         self.inflight_key = inflight_key
     
-    async def dispatch(self, task_name: str, task_data: dict, concurrency_dimensions: list):
+    async def dispatch(self, task_name: str, task_data: dict, task_metadata: dict = None):
         """
         Dispatch the request to the appropriate handler with concurrency control.
         """
+        concurrency_dimensions = task_metadata.get("_concurrency_dimensions", [])
+        
         # Tracking key across all dispatcher instances
         for dimension in concurrency_dimensions:
             # Increase by the dimension
             await self.redis_client.incrby(f"dispatcher:concurrency:{dimension}")
             
-        # Call the inner dispatch method to handle the request
-        await self._inner_dispatch(task_name, task_data) 
-        
-    @abstractmethod
-    async def _inner_dispatch(self, task_name: str, task_data: dict):
-        """
-        Inner dispatch method to be implemented by subclasses.
-        """
-        pass
-        
-class ImmediateArqDispatcher(ConcurrencyAwareDispatcher):
-    """
-    ImmediateArqDispatcher class to handle immediate requests.
-    """
-    
-    def __init__(self, arq: ArqRedis, redis_client: Redis, inflight_key: str = "arq:jobs:inflight"):
-        """
-        Initialize the ImmediateArqDispatcher with a Redis client.
-
-        Args:
-            redis_client (Redis): The Redis client instance.
-        """
-        super().__init__(redis_client, inflight_key)
-        self.arq = arq
-    
-    async def _inner_dispatch(self, task_name: str, task_data: dict):
-        """
-        Dispatch the request immediately.
-        """
         # Dispatch the task immediately
-        job = await self.arq.enqueue_job(task_name, task_data)
+        job = await self.arq.enqueue_job(task_name, task_data, task_metadata)
         
         # Add the job ID to the inflight set
         await self.redis_client.sadd(self.inflight_key, job.job_id)
+
+    async def increse_concurrency(self, dimensions: list):
+        """
+        Increase the concurrency for the specified dimensions.
+        """
         
+        for dimension in dimensions:
+            await self.redis_client.incrby(f"dispatcher:concurrency:{dimension}")
+            
+    async def decrease_concurrency(self, dimensions: list):
+        """
+        Decrease the concurrency for the specified dimensions.
+        """
         
+        for dimension in dimensions:
+            await self.redis_client.decrby(f"dispatcher:concurrency:{dimension}")

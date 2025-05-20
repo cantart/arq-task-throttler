@@ -3,17 +3,20 @@ from typing import Awaitable, Callable, Optional
 
 import redis.asyncio as redis
 from arq.jobs import Job, JobStatus
+from arq_dispatcher import ConcurrencyAwareArqDispatcher
 
 
 class ArqJobResultCollector:
     def __init__(
         self,
         redis_client: redis.Redis,
+        dispatcher: ConcurrencyAwareArqDispatcher,
         poll_interval: float = 2.0,
         inflight_key: str = "arq:jobs:inflight",
         on_result: Optional[Callable[[str, str, dict | None], Awaitable[None]]] = None,
     ):
         self.redis = redis_client
+        self.dispatcher = dispatcher
         self.poll_interval = poll_interval
         self.inflight_key = inflight_key
         self.on_result = on_result
@@ -66,6 +69,10 @@ class ArqJobResultCollector:
                     
                 print(f"[ArqJobResultCollector] Collected result for {job_id} → {job_result}")
                 await self.redis.srem(self.inflight_key, job_id)
+                
+                job_info = await job.info()
+                concurrency_dimensions = job_info.args[1].get("_concurrency_dimensions", [])
+                await self.dispatcher.decrease_concurrency(concurrency_dimensions)
                     
                 if self.on_result:
                     await self.on_result(job_id, status, job_result)

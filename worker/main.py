@@ -1,5 +1,8 @@
 from arq.connections import RedisSettings
 from httpx import AsyncClient
+from taskkit import arq_task_wrapper
+from tasks import (BlockingLongRunningTask, DownloadContentTask, GreetingTask,
+                   NonBlockingLongRunningTask)
 
 # Here you can configure the Redis connection.
 # The default is to connect to localhost:6379, no password.
@@ -7,32 +10,6 @@ REDIS_SETTINGS = RedisSettings(
     host="redis",
     port=6379
 )
-
-async def download_content(ctx, task_data: dict):
-    """Download content from a URL."""
-    url = task_data.get('url')
-    session: AsyncClient = ctx['session']
-    response = await session.get(url)
-    print(f'{url}: {response.text:.80}...')
-    return len(response.text)
-
-async def greeting(ctx, task_data: dict):
-    """Send a greeting message."""
-    name = task_data.get('name')
-    message = f"Hello, {name}"
-    return message
-
-async def long_running_task_block(ctx, task_data: dict):
-    """Simulate a long-running task."""
-    import time
-    time.sleep(20)
-    return "Long-running task completed (blocking)"
-
-async def long_running_task_non_block(ctx, task_data: dict):
-    """Simulate a long-running task."""
-    import asyncio
-    await asyncio.sleep(20)
-    return "Long-running task completed (non-blocking)"
 
 async def startup(ctx):
     ctx['session'] = AsyncClient()
@@ -45,7 +22,12 @@ async def shutdown(ctx):
 # redis_settings might be omitted here if using the default settings
 # For a list of all available settings, see https://arq-docs.helpmanual.io/#arq.worker.Worker
 class WorkerSettings:
-    functions = [download_content, greeting, long_running_task_block, long_running_task_non_block]
+    functions = [
+        arq_task_wrapper(DownloadContentTask, name="download_content"),
+        arq_task_wrapper(GreetingTask, name="greeting"),
+        arq_task_wrapper(BlockingLongRunningTask, name="long_running_task_block"),
+        arq_task_wrapper(NonBlockingLongRunningTask, name="long_running_task_non_block"),
+    ]
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = REDIS_SETTINGS

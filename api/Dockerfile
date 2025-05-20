@@ -8,4 +8,6 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . /app/
 
+ENV PYTHONPATH=/app
+
 CMD ["fastapi", "run", "main.py", "--port", "80", "--reload"]

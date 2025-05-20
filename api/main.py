@@ -6,11 +6,10 @@ import redis
 import redis.asyncio
 from arq import create_pool
 from arq.connections import RedisSettings
+from arq_dispatcher import ConcurrencyAwareArqDispatcher
+from arq_result_collector import ArqJobResultCollector
 from fastapi import FastAPI
 from pydantic import BaseModel
-
-from .arq_dispatcher import ConcurrencyAwareDispatcher, ImmediateArqDispatcher
-from .arq_result_collector import ArqJobResultCollector
 
 REDIS_SETTINGS = RedisSettings(
     host="redis",
@@ -34,18 +33,19 @@ async def lifespan(app: FastAPI):
         port=6379,
     )
     
-    result_collector = ArqJobResultCollector(
-        redis_client=app.state.redis_client,
-        on_result=handle_task_result,
-    )
-    asyncio.create_task(result_collector.start())
-    app.state.result_collector = result_collector
-    
-    dispatcher = ImmediateArqDispatcher(
+    dispatcher = ConcurrencyAwareArqDispatcher(
         arq=app.state.arq,
         redis_client=app.state.redis_client,
     )
     app.state.dispatcher = dispatcher
+    
+    result_collector = ArqJobResultCollector(
+        redis_client=app.state.redis_client,
+        dispatcher=dispatcher,
+        on_result=handle_task_result,
+    )
+    asyncio.create_task(result_collector.start())
+    app.state.result_collector = result_collector
     
     yield
     
@@ -63,7 +63,7 @@ class TaskSubmissionRequest(BaseModel):
 
 @app.post('/task/{task_name}')
 async def submit_task(request: TaskSubmissionRequest):
-    dispatcher: ConcurrencyAwareDispatcher = app.state.dispatcher
+    dispatcher: ConcurrencyAwareArqDispatcher = app.state.dispatcher
     
     """Submit a task to the queue."""
     task_name = request.task_name
@@ -89,7 +89,9 @@ async def submit_task(request: TaskSubmissionRequest):
     await dispatcher.dispatch(
         task_name=task_name,
         task_data=task_data,
-        concurrency_dimensions=["connector:1234", "cluster", "account:1234"],
+        task_metadata={
+            "_concurrency_dimensions": ["connector:1234", "cluster", "account:1234"],
+        }
     )
     
     return {
