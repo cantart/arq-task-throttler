@@ -38,9 +38,9 @@ class ArqJobResultCollector:
                     finally:
                         await lock.release()
                 await asyncio.sleep(self.poll_interval)
-        await asyncio.create_task(run_loop())
-        print("[ArqJobResultCollector] Stopped result collector.")
-
+            print("[ArqJobResultCollector] Stopped result collector.")
+        asyncio.create_task(run_loop())
+        
     async def stop(self):
         print("[ArqJobResultCollector] Stopping result collector...")
         self._running = False
