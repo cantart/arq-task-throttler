@@ -38,14 +38,14 @@ class ConcurrencyAwareDispatcher(ABC):
         """
         pass
         
-class ImmediateDispatcher(ConcurrencyAwareDispatcher):
+class ImmediateArqDispatcher(ConcurrencyAwareDispatcher):
     """
-    ImmediateDispatcher class to handle immediate requests.
+    ImmediateArqDispatcher class to handle immediate requests.
     """
     
     def __init__(self, arq: ArqRedis, redis_client: Redis, inflight_key: str = "arq:jobs:inflight"):
         """
-        Initialize the ImmediateDispatcher with a Redis client.
+        Initialize the ImmediateArqDispatcher with a Redis client.
 
         Args:
             redis_client (Redis): The Redis client instance.

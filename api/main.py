@@ -9,8 +9,8 @@ from arq.connections import RedisSettings
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from .arq_dispatcher import ConcurrencyAwareDispatcher, ImmediateArqDispatcher
 from .arq_result_collector import ArqJobResultCollector
-from .dispatcher import ConcurrencyAwareDispatcher, ImmediateDispatcher
 
 REDIS_SETTINGS = RedisSettings(
     host="redis",
@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(result_collector.start())
     app.state.result_collector = result_collector
     
-    dispatcher = ImmediateDispatcher(
+    dispatcher = ImmediateArqDispatcher(
         arq=app.state.arq,
         redis_client=app.state.redis_client,
     )

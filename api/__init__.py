@@ -1,2 +1,2 @@
+from .arq_dispatcher import ConcurrencyAwareDispatcher, ImmediateArqDispatcher
 from .arq_result_collector import ArqJobResultCollector
-from .dispatcher import ConcurrencyAwareDispatcher, ImmediateDispatcher
