@@ -1,14 +1,16 @@
 import asyncio
+import uuid
 from contextlib import asynccontextmanager
 
 import redis
 import redis.asyncio
-from arq import ArqRedis, create_pool
+from arq import create_pool
 from arq.connections import RedisSettings
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 from .arq_result_collector import ArqJobResultCollector
+from .dispatcher import Dispatcher, ImmediateDispatcher
 
 REDIS_SETTINGS = RedisSettings(
     host="redis",
@@ -39,6 +41,12 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(result_collector.start())
     app.state.result_collector = result_collector
     
+    dispatcher = ImmediateDispatcher(
+        arq=app.state.arq,
+        redis_client=app.state.redis_client,
+    )
+    app.state.dispatcher = dispatcher
+    
     yield
     
     # Shutdown
@@ -55,8 +63,7 @@ class TaskSubmissionRequest(BaseModel):
 
 @app.post('/task/{task_name}')
 async def submit_task(request: TaskSubmissionRequest):
-    arq: ArqRedis = app.state.arq
-    redis_client: redis.Redis = app.state.redis_client
+    dispatcher: Dispatcher = app.state.dispatcher
     
     """Submit a task to the queue."""
     task_name = request.task_name
@@ -78,13 +85,13 @@ async def submit_task(request: TaskSubmissionRequest):
         if arg_key not in task_data:
             return {'status': 'error', 'message': f'{arg_key.capitalize()} is required for {task_name} task'}
 
-    # Dispatch the task immediately
-    job = await arq.enqueue_job(task_name, task_data)
-    
-    # Add the job ID to the inflight set
-    await redis_client.sadd('arq:jobs:inflight', job.job_id)
+    # Dispatch the task
+    await dispatcher.dispatch(
+        task_name=task_name,
+        task_data=task_data,
+    )
     
     return {
-        'job_id': job.job_id, # Change to application task ID
+        'task_id': uuid.uuid4().hex,
         'status': 'ok',
     }
