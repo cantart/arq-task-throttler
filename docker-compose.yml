@@ -1,0 +1,44 @@
+services:
+  api:
+    build:
+      context: ./api
+    ports:
+      - 8080:80
+    depends_on:
+      - redis
+    volumes:
+      - ./api:/app
+    networks:
+      - public-network
+    
+
+  worker:
+    build:
+      context: ./worker
+    deploy:
+      replicas: 2
+    depends_on:
+      - redis
+    volumes:
+      - ./worker:/worker
+    networks:
+      - private-network
+    
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    networks:
+      - private-network
+      - public-network
+
+volumes:
+  redis-data:
+
+networks:
+  private-network:
+  public-network:
+
+

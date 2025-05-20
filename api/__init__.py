@@ -1,0 +1,1 @@
+from .arq_result_collector import ArqJobResultCollector
