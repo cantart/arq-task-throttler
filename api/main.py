@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
         dispatcher=dispatcher,
         on_result=handle_task_result,
     )
-    result_collector.start()
+    await result_collector.start()
     app.state.result_collector = result_collector
     
     yield
