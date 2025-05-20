@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from .arq_result_collector import ArqJobResultCollector
-from .dispatcher import Dispatcher, ImmediateDispatcher
+from .dispatcher import ConcurrencyAwareDispatcher, ImmediateDispatcher
 
 REDIS_SETTINGS = RedisSettings(
     host="redis",
@@ -63,7 +63,7 @@ class TaskSubmissionRequest(BaseModel):
 
 @app.post('/task/{task_name}')
 async def submit_task(request: TaskSubmissionRequest):
-    dispatcher: Dispatcher = app.state.dispatcher
+    dispatcher: ConcurrencyAwareDispatcher = app.state.dispatcher
     
     """Submit a task to the queue."""
     task_name = request.task_name
@@ -89,6 +89,7 @@ async def submit_task(request: TaskSubmissionRequest):
     await dispatcher.dispatch(
         task_name=task_name,
         task_data=task_data,
+        concurrency_dimensions=["connector:1234", "cluster", "account:1234"],
     )
     
     return {
