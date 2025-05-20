@@ -29,15 +29,16 @@ class ArqJobResultCollector:
         self._running = True
         lock = self.redis.lock("arq:result-collector", timeout=10)
         
-        while self._running:
-            got_lock = await lock.acquire(blocking_timeout=0.5)
-            if got_lock:
-                try:
-                    await self._collect_once()
-                finally:
-                    await lock.release()
-            await asyncio.sleep(self.poll_interval)
-            
+        async def run_loop():
+            while self._running:
+                got_lock = await lock.acquire(blocking_timeout=0.5)
+                if got_lock:
+                    try:
+                        await self._collect_once()
+                    finally:
+                        await lock.release()
+                await asyncio.sleep(self.poll_interval)
+        await asyncio.create_task(run_loop())
         print("[ArqJobResultCollector] Stopped result collector.")
 
     async def stop(self):
