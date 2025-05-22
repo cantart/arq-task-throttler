@@ -60,12 +60,12 @@ The API service exposes the following endpoints (details can be found in `api/ma
     - Request Body: `{"url": "string"}`
     - Response: Information about the dispatched task.
 - **POST `/api/v1/task/blocking_long_running_task`**: Dispatches a blocking long-running task.
-    - Request Body: `{"duration": "int"}` (duration in seconds)
+    - Request Body: `{}` (no task parameters yet)
     - Response: Information about the dispatched task.
 - **POST `/api/v1/task/non_blocking_long_running_task`**: Dispatches a non-blocking long-running task.
-     - Request Body: `{"duration": "int"}` (duration in seconds)
+     - Request Body: `{}` (no task parameters yet)
      - Response: Information about the dispatched task.
-- **GET `/api/v1/task/result/{task_id}`**: Retrieves the result of a completed task.
+- **GET `/api/v1/task/result/{task_id}`**: Retrieves the result of a completed task. (Not implement yet)
     - Path Parameter: `task_id` (ID of the task)
     - Response: The result of the task.
 
