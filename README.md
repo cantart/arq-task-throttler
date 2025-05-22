@@ -1,8 +1,5 @@
 # ARQ Task Throttler
 
-## Project Overview
-
-
 This project demonstrates a simple API and worker service setup using Docker. The API receives requests and dispatches tasks to the worker service, which processes them asynchronously, including throttling dispatching feature.
 
 ## Prerequisites
