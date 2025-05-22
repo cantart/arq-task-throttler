@@ -1,6 +1,11 @@
 # ARQ Task Throttler
 
-This project demonstrates a simple API and worker service setup using Docker. The API receives requests and dispatches tasks to the worker service, which processes them asynchronously, including throttling dispatching feature.
+> A tiny Proof of Concept to demonstrate how to run async tasks using [ARQ](https://github.com/samuelcolvin/arq) with throttling layer.
+
+This project is a personal PoC to explore:
+- Task queuing with ARQ and Redis
+- Containerized setup using Docker
+- Async job dispatch and concurrency management in Python
 
 ## Prerequisites
 
@@ -30,7 +35,8 @@ This project demonstrates a simple API and worker service setup using Docker. Th
 
 ## Running the tests
 
-Currently, there are currently no automated tests in this project.
+There are none. I'm the test now. 😁
+(But you can help me write the tests, PRs are welcome!)
 
 ## Project Structure
 
@@ -47,7 +53,7 @@ Currently, there are currently no automated tests in this project.
     - **`taskkit/`**: Contains base classes and wrappers for tasks.
     - **`tasks/`**: Contains specific task implementations.
 - **`docker-compose.yml`**: Defines the services, networks, and volumes for Docker Compose.
-- **`README.md`**: This file.
+- **`README.md`**: You’re reading it. Meta.
 
 ## API Endpoints
 
@@ -77,3 +83,7 @@ The worker service processes the following tasks (defined in `worker/tasks/`):
 - **`download_content_task`**: Downloads content from a given URL.
 - **`blocking_long_running_task`**: Simulates a long-running task that blocks the worker.
 - **`non_blocking_long_running_task`**: Simulates a long-running task that does not block the worker, allowing it to pick up other tasks.
+
+## 🚫 Disclaimer
+
+This project is not affiliated with any company or employer. It was created independently for educational and experimentation purposes only.
