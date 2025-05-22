@@ -1,4 +1,4 @@
-# Project Name: Example API and Worker Service
+# Project Name: ARQ Task Throttler
 
 ## Project Overview
 
