@@ -14,6 +14,7 @@ class ArqJobResultCollector:
         poll_interval: float = 2.0,
         inflight_key: str = "arq:jobs:inflight",
         on_result: Optional[Callable[[str, str, dict | None], Awaitable[None]]] = None,
+        verbose: bool = False,
     ):
         self.redis = redis_client
         self.dispatcher = dispatcher
@@ -21,11 +22,16 @@ class ArqJobResultCollector:
         self.inflight_key = inflight_key
         self.on_result = on_result
 
-        # Instante attributes
+        # Instance attributes
         self._running = False
+        
+        # Verbose mode
+        self.verbose = verbose
+    
 
     async def start(self):
-        print("[ArqJobResultCollector] Starting result collector...")
+        if self.verbose:
+            print("[ArqJobResultCollector] Starting result collector...")
         self._running = True
         lock = self.redis.lock("arq:result-collector", timeout=10)
         
@@ -38,11 +44,13 @@ class ArqJobResultCollector:
                     finally:
                         await lock.release()
                 await asyncio.sleep(self.poll_interval)
-            print("[ArqJobResultCollector] Stopped result collector.")
+            if self.verbose:
+                print("[ArqJobResultCollector] Stopped result collector.")
         asyncio.create_task(run_loop())
         
     async def stop(self):
-        print("[ArqJobResultCollector] Stopping result collector...")
+        if self.verbose:
+            print("[ArqJobResultCollector] Stopping result collector...")
         self._running = False
 
     async def _collect_once(self):
@@ -52,7 +60,8 @@ class ArqJobResultCollector:
 
         for job_id_bytes in job_ids:
             job_id = job_id_bytes.decode()
-            print(f"[ArqJobResultCollector] Collecting result for job ID: {job_id}")
+            if self.verbose:
+                print(f"[ArqJobResultCollector] Collecting result for job ID: {job_id}")
             job = Job(job_id=job_id, redis=self.redis)
             
             # Get the job status
@@ -68,7 +77,8 @@ class ArqJobResultCollector:
                         "error": str(e),
                     }
                     
-                print(f"[ArqJobResultCollector] Collected result for {job_id} → {job_result}")
+                if self.verbose:
+                    print(f"[ArqJobResultCollector] Collected result for {job_id} → {job_result}")
                 await self.redis.srem(self.inflight_key, job_id)
                 
                 job_info = await job.info()
