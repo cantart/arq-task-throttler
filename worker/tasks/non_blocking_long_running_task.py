@@ -1,11 +1,11 @@
-from taskkit import arq_task_wrapper
-from taskkit.base_task import BaseTask
+from taskkit.base_task import AppIdempotentBaseTask
 
 
-class NonBlockingLongRunningTask(BaseTask):
+class NonBlockingLongRunningTask(AppIdempotentBaseTask):
     """
     Task to simulate a non-blocking long-running task.
     """
+    name = 'long_running_task_non_block'
 
     async def run(self) -> str:
         """

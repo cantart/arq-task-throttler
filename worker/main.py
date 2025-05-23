@@ -1,8 +1,9 @@
 from arq.connections import RedisSettings
 from httpx import AsyncClient
 from taskkit import arq_task_wrapper
-from tasks import (BlockingLongRunningTask, DownloadContentTask, GreetingTask,
-                   NonBlockingLongRunningTask)
+from tasks import (BlockingLongRunningTask, DownloadContentTask, ErrorTask,
+                   GreetingTask, NonBlockingLongRunningTask,
+                   SideEffectErrorTask)
 
 # Here you can configure the Redis connection.
 # The default is to connect to localhost:6379, no password.
@@ -23,11 +24,14 @@ async def shutdown(ctx):
 # For a list of all available settings, see https://arq-docs.helpmanual.io/#arq.worker.Worker
 class WorkerSettings:
     functions = [
-        arq_task_wrapper(DownloadContentTask, name="download_content"),
-        arq_task_wrapper(GreetingTask, name="greeting"),
-        arq_task_wrapper(BlockingLongRunningTask, name="long_running_task_block"),
-        arq_task_wrapper(NonBlockingLongRunningTask, name="long_running_task_non_block"),
+        arq_task_wrapper(DownloadContentTask),
+        arq_task_wrapper(GreetingTask),
+        arq_task_wrapper(BlockingLongRunningTask),
+        arq_task_wrapper(NonBlockingLongRunningTask),
+        arq_task_wrapper(ErrorTask),
+        arq_task_wrapper(SideEffectErrorTask),
     ]
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = REDIS_SETTINGS
+    # allow_abort_jobs = True

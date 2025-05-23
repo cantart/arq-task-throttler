@@ -1,11 +1,11 @@
-from taskkit import arq_task_wrapper
-from taskkit.base_task import BaseTask
+from taskkit.base_task import AppIdempotentBaseTask
 
 
-class DownloadContentTask(BaseTask):
+class DownloadContentTask(AppIdempotentBaseTask):
     """
     Task to download content from a URL.
     """
+    name = 'download_content'
 
     async def run(self) -> int:
         """

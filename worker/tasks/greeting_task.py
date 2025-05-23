@@ -1,11 +1,11 @@
-from taskkit import arq_task_wrapper
-from taskkit.base_task import BaseTask
+from taskkit.base_task import AppIdempotentBaseTask
 
 
-class GreetingTask(BaseTask):
+class GreetingTask(AppIdempotentBaseTask):
     """
     Task to send a greeting message.
     """
+    name = 'greeting'
 
     async def run(self) -> str:
         """

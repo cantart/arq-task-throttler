@@ -99,6 +99,8 @@ async def submit_task(request: TaskSubmissionRequest):
         'greeting': ['name'],
         'long_running_task_block': [],
         'long_running_task_non_block': [],
+        'ErrorTask': [],
+        'SideEffectErrorTask': [],
     }
 
     arg_keys = task_args.get(task_name)
