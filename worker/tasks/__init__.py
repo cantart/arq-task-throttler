@@ -4,3 +4,5 @@ from .error_task import ErrorTask
 from .greeting_task import GreetingTask
 from .non_blocking_long_running_task import NonBlockingLongRunningTask
 from .side_effect_error_task import SideEffectErrorTask
+from .side_effect_long_running_task import \
+    SideEffectNonBlockingLongRunningWithErrorTask

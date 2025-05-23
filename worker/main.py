@@ -3,7 +3,8 @@ from httpx import AsyncClient
 from taskkit import arq_task_wrapper
 from tasks import (BlockingLongRunningTask, DownloadContentTask, ErrorTask,
                    GreetingTask, NonBlockingLongRunningTask,
-                   SideEffectErrorTask)
+                   SideEffectErrorTask,
+                   SideEffectNonBlockingLongRunningWithErrorTask)
 
 # Here you can configure the Redis connection.
 # The default is to connect to localhost:6379, no password.
@@ -30,6 +31,7 @@ class WorkerSettings:
         arq_task_wrapper(NonBlockingLongRunningTask),
         arq_task_wrapper(ErrorTask),
         arq_task_wrapper(SideEffectErrorTask),
+        arq_task_wrapper(SideEffectNonBlockingLongRunningWithErrorTask)
     ]
     on_startup = startup
     on_shutdown = shutdown
