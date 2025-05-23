@@ -7,7 +7,8 @@ from arq import create_pool
 from arq.connections import RedisSettings
 from arq_dispatcher import ConcurrencyAwareArqDispatcher
 from arq_result_collector import ArqJobResultCollector
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
 from persistence import ConnectorRepository
 from pydantic import BaseModel
 from service import AccountService
@@ -101,11 +102,17 @@ async def submit_task(request: TaskSubmissionRequest):
 
     arg_keys = task_args.get(task_name)
     if arg_keys is None:
-        return {'status': 'error', 'message': 'Invalid task name'}
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={'message': 'Invalid task name'}
+        )
 
     for arg_key in arg_keys:
         if arg_key not in task_data:
-            return {'status': 'error', 'message': f'{arg_key.capitalize()} is required for {task_name} task'}
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={'message': f'{arg_key.capitalize()} is required for {task_name} task'}
+            )
 
     # Dispatch the task
     await dispatcher.dispatch(
@@ -116,7 +123,6 @@ async def submit_task(request: TaskSubmissionRequest):
         }
     )
     
-    return {
+    return JSONResponse({
         'task_id': uuid.uuid4().hex,
-        'status': 'ok',
-    }
+    })
