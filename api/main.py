@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from service import AccountService
 from throttling import StaticThrottlingPolicy
 
+CLUSTER_DIMENSION = "cluster"
 REDIS_SETTINGS = RedisSettings(
     host="redis",
     port=6379
@@ -50,7 +51,7 @@ async def lifespan(app: FastAPI):
     for connector in connectors:
         limit_config[f"connector:{connector['id']}"] = connector['max_concurrency']
         print(f"Policy added for connector: {connector['id']} with limit: {connector['max_concurrency']}")
-    limit_config["cluster"] = 10
+    limit_config[CLUSTER_DIMENSION] = 10
         
     static_policy = StaticThrottlingPolicy(limit_config=limit_config)
     dispatcher = ConcurrencyAwareArqDispatcher(
@@ -119,7 +120,8 @@ async def submit_task(request: TaskSubmissionRequest):
         task_name=task_name,
         task_data=task_data,
         task_metadata={
-            "_concurrency_dimensions": ["account:acct-001", "connector:conn-001", "cluster"],
+            "_concurrency_dimensions": ["account:acct-001", "connector:conn-001", CLUSTER_DIMENSION], # account ดูจาก token, connector ดูจาก connector_id ใน task_data และต้องตรงกับตอนสร้าง policy
+            "_retry_dispatch_interval": 5, # ต้องดูว่า task ใช้เวลานานแค่ไหน
         }
     )
     
