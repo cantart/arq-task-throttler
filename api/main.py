@@ -1,4 +1,3 @@
-import asyncio
 import uuid
 from contextlib import asynccontextmanager
 
@@ -9,7 +8,10 @@ from arq.connections import RedisSettings
 from arq_dispatcher import ConcurrencyAwareArqDispatcher
 from arq_result_collector import ArqJobResultCollector
 from fastapi import FastAPI
+from persistence import ConnectorRepository
 from pydantic import BaseModel
+from service import AccountService
+from throttling import StaticThrottlingPolicy
 
 REDIS_SETTINGS = RedisSettings(
     host="redis",
@@ -33,10 +35,29 @@ async def lifespan(app: FastAPI):
         port=6379,
     )
     
+    # Construct the throttling policy
+    limit_config = {}
+    account_service = AccountService()
+    accounts = account_service.get_all_accounts()
+
+    for account in accounts:
+        limit_config[f"account:{account['id']}"] = account['max_concurrency']
+        print(f"Policy added for account: {account['id']} with limit: {account['max_concurrency']}")
+        
+    connector_repository = ConnectorRepository()
+    connectors = connector_repository.get_all_connectors()
+    for connector in connectors:
+        limit_config[f"connector:{connector['id']}"] = connector['max_concurrency']
+        print(f"Policy added for connector: {connector['id']} with limit: {connector['max_concurrency']}")
+    limit_config["cluster"] = 10
+        
+    static_policy = StaticThrottlingPolicy(limit_config=limit_config)
     dispatcher = ConcurrencyAwareArqDispatcher(
         arq=app.state.arq,
         redis_client=app.state.redis_client,
+        throttling_policy=static_policy,
     )
+    await dispatcher.start()
     app.state.dispatcher = dispatcher
     
     result_collector = ArqJobResultCollector(
@@ -53,6 +74,7 @@ async def lifespan(app: FastAPI):
     await app.state.arq.aclose()
     await app.state.redis_client.close()
     await app.state.result_collector.stop()
+    await app.state.dispatcher.stop()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -90,7 +112,7 @@ async def submit_task(request: TaskSubmissionRequest):
         task_name=task_name,
         task_data=task_data,
         task_metadata={
-            "_concurrency_dimensions": ["connector:1234", "cluster", "account:1234"],
+            "_concurrency_dimensions": ["account:acct-001", "connector:conn-001", "cluster"],
         }
     )
     
