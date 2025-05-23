@@ -26,7 +26,7 @@ class ConcurrencyAwareArqDispatcher:
         concurrency_dimensions = task_metadata.get("_concurrency_dimensions", [])
         
         # Tracking key across all dispatcher instances
-        self.increse_concurrency(concurrency_dimensions)
+        await self.increse_concurrency(concurrency_dimensions)
             
         # Dispatch the task immediately
         job = await self.arq.enqueue_job(task_name, task_data, task_metadata)
