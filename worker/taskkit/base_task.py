@@ -3,6 +3,11 @@ from typing import Any
 
 
 class BaseTask(ABC):
+    name = None
+    retry_delay: int = 10
+    max_retries: int = 3
+    timeout: int = 60 # 1 minute
+    
     def __init__(self, ctx: dict, payload: dict, metadata: dict = None):
         self.ctx = ctx
         self.payload = payload
@@ -27,9 +32,6 @@ class AppIdempotentBaseTask(BaseTask):
 
     Workers must be able to retry the task without causing side effects.
     """
-    name = None
-    retry_delay: int = 10
-    max_retries: int = 3
     
 class SideEffectBaseTask(BaseTask):
     """
@@ -42,7 +44,4 @@ class SideEffectBaseTask(BaseTask):
     If the task fails, it should be marked as failed and not retried.
     If the task is configured to be retried, task developers must ensure that the task is idempotent by themselves.
     """
-    name = None
     allow_retry: bool = False
-    retry_delay: int = 10
-    max_retries: int = 3

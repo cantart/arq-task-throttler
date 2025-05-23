@@ -20,6 +20,7 @@ def arq_task_wrapper(
             _wrapped,
             name=task_cls.name or task_cls.__name__,
             max_tries=task_cls.max_retries,
+            timeout=task_cls.timeout,
         )
     elif issubclass(task_cls, SideEffectBaseTask):
         async def _wrapped(ctx, payload, metadata):
@@ -37,6 +38,7 @@ def arq_task_wrapper(
             _wrapped,
             name=task_cls.name or task_cls.__name__,
             max_tries=task_cls.max_retries if task_cls.allow_retry else 1,
+            timeout=task_cls.timeout,
         )
     
     
