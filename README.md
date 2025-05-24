@@ -87,3 +87,6 @@ The worker service processes the following tasks (defined in `worker/tasks/`):
 ## 🚫 Disclaimer
 
 This project is not affiliated with any company or employer. It was created independently for educational and experimentation purposes only.
+
+
+https://docs.astral.sh/uv/guides/integration/docker/#available-images

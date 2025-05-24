@@ -1,10 +1,11 @@
 from arq.connections import RedisSettings
 from httpx import AsyncClient
-from taskkit import arq_task_wrapper
 from tasks import (BlockingLongRunningTask, DownloadContentTask, ErrorTask,
                    GreetingTask, NonBlockingLongRunningTask,
                    SideEffectErrorTask,
                    SideEffectNonBlockingLongRunningWithErrorTask)
+
+from .arq_task_wrapper import arq_task_wrapper
 
 # Here you can configure the Redis connection.
 # The default is to connect to localhost:6379, no password.

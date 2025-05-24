@@ -1,4 +1,4 @@
-from taskkit.base_task import AppIdempotentBaseTask
+from tasks.base_task import AppIdempotentBaseTask
 
 
 class DownloadContentTask(AppIdempotentBaseTask):

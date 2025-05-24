@@ -3,7 +3,7 @@ from typing import Awaitable, Callable, Optional
 
 import redis.asyncio as redis
 from arq.jobs import Job, JobStatus
-from arq_dispatcher import ConcurrencyAwareArqDispatcher
+from dispatcher import ConcurrencyAwareArqDispatcher
 
 
 class ArqJobResultCollector:

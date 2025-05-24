@@ -1,7 +1,7 @@
-from taskkit.base_task import SideEffectBaseTask
+from tasks.base_task import AppIdempotentBaseTask
 
 
-class SideEffectErrorTask(SideEffectBaseTask):
+class ErrorTask(AppIdempotentBaseTask):
     """
     A task that raises an error to test the error handling of the worker.
     """
@@ -10,4 +10,4 @@ class SideEffectErrorTask(SideEffectBaseTask):
         """
         Run the task and raise an error.
         """
-        raise Exception("This is a test error from SideEffectErrorTask.")
+        raise Exception("This is a test error from ErrorTask.")

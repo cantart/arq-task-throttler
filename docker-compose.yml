@@ -1,26 +1,29 @@
 services:
   api:
     build:
-      context: ./api
+      context: .
+      dockerfile: ./docker/Dockerfile.api
     ports:
       - 8080:80
     depends_on:
       - redis
     volumes:
-      - ./api:/app
+      - ./app:/app
     networks:
       - public-network
+      - private-network
     
 
   worker:
     build:
-      context: ./worker
+      context: .
+      dockerfile: ./docker/Dockerfile.worker
     deploy:
       replicas: 2
     depends_on:
       - redis
     volumes:
-      - ./worker:/worker
+      - ./app:/app
     networks:
       - private-network
     
@@ -32,7 +35,6 @@ services:
       - redis-data:/data
     networks:
       - private-network
-      - public-network
 
 volumes:
   redis-data:

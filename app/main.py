@@ -5,10 +5,10 @@ import redis
 import redis.asyncio
 from arq import create_pool
 from arq.connections import RedisSettings
-from arq_dispatcher import ConcurrencyAwareArqDispatcher
-from arq_result_collector import ArqJobResultCollector
+from dispatcher import ConcurrencyAwareArqDispatcher
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
+from job_result_collector import ArqJobResultCollector
 from persistence import ConnectorRepository
 from pydantic import BaseModel
 from service import AccountService

@@ -1,0 +1,20 @@
+[project]
+name = "arq-task-throttler"
+version = "0.1.0"
+description = "A task queue system for Arq with throttling capabilities"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic",
+    "arq",
+    "redis"
+]
+
+[project.optional-dependencies]
+api = [
+    "fastapi[standard]",
+    "uvicorn"
+]
+worker = [
+    "httpx"
+]

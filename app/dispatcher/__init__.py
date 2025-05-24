@@ -1,2 +1,1 @@
 from .arq_dispatcher import ConcurrencyAwareArqDispatcher
-from .arq_result_collector import ArqJobResultCollector

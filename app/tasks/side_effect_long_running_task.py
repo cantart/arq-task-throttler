@@ -1,6 +1,6 @@
 import asyncio
 
-from taskkit.base_task import SideEffectBaseTask
+from tasks.base_task import SideEffectBaseTask
 
 
 class SideEffectNonBlockingLongRunningWithErrorTask(SideEffectBaseTask):

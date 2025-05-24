@@ -1,6 +1,6 @@
 from arq import Retry, func
 from pydantic import ValidationError, create_model
-from taskkit.base_task import AppIdempotentBaseTask, SideEffectBaseTask
+from tasks.base_task import AppIdempotentBaseTask, SideEffectBaseTask
 
 
 def arq_task_wrapper(
