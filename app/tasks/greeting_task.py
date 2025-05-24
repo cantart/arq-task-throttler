@@ -1,5 +1,5 @@
-from schema import TaskIoField
 from tasks.base_task import AppIdempotentBaseTask
+from tasks.schema import TaskIoField
 
 
 class GreetingTask(AppIdempotentBaseTask):

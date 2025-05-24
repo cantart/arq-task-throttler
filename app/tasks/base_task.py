@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from schema import TaskIoField
+from tasks.schema import TaskIoField
 
 
 class BaseTask(ABC):
