@@ -149,7 +149,9 @@ class ConcurrencyAwareArqDispatcher:
         for dimension in dimensions:
             # Check whether the dimension exists or value is greater than 0
             current_value = await self.redis_client.get(f"dispatcher:concurrency:{dimension}")
-            if current_value is None or int(current_value) <= 0:
-                return
-            
-            await self.redis_client.decrby(f"dispatcher:concurrency:{dimension}")
+            if current_value is None:
+                continue
+            elif int(current_value) <= 0:
+                await self.redis_client.delete(f"dispatcher:concurrency:{dimension}")
+            else:
+                await self.redis_client.decrby(f"dispatcher:concurrency:{dimension}")
