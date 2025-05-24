@@ -2,3 +2,4 @@ arq
 redis
 httpx
 watchfiles
+pydantic

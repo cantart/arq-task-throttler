@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Dict
+
+from schema import TaskIoField
 
 
 class BaseTask(ABC):
@@ -7,6 +9,8 @@ class BaseTask(ABC):
     retry_delay: int = 10
     max_retries: int = 3
     timeout: int = 60 # 1 minute
+    input_schema: list[TaskIoField] = []
+    output_schema: list[TaskIoField] = []
     
     def __init__(self, ctx: dict, payload: dict, metadata: dict = None):
         self.ctx = ctx
@@ -14,7 +18,7 @@ class BaseTask(ABC):
         self.metadata = metadata
 
     @abstractmethod
-    async def run(self) -> Any:
+    async def run(self) -> Dict:
         """
         Run the task with the provided context and task data.
 

@@ -93,38 +93,12 @@ async def submit_task(request: TaskSubmissionRequest):
     task_name = request.task_name
     task_data = request.task_data
 
-    # Map task names to required argument keys
-    task_args = {
-        'download_content': ['url'],
-        'greeting': ['name'],
-        'long_running_task_block': [],
-        'long_running_task_non_block': [],
-        'ErrorTask': [],
-        'SideEffectErrorTask': [],
-        'SideEffectNonBlockingLongRunningWithErrorTask': [],
-    }
-
-    arg_keys = task_args.get(task_name)
-    if arg_keys is None:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={'message': 'Invalid task name'}
-        )
-
-    for arg_key in arg_keys:
-        if arg_key not in task_data:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={'message': f'{arg_key.capitalize()} is required for {task_name} task'}
-            )
-
     # Dispatch the task
     await dispatcher.dispatch(
         task_name=task_name,
         task_data=task_data,
         task_metadata={
-            "_concurrency_dimensions": ["account:acct-001", "connector:conn-001", CLUSTER_DIMENSION], # account ดูจาก token, connector ดูจาก connector_id ใน task_data และต้องตรงกับตอนสร้าง policy
-            "_retry_dispatch_interval": 5, # ต้องดูว่า task ใช้เวลานานแค่ไหน
+            "_concurrency_dimensions": ["account:acct-001", "connector:conn-001", CLUSTER_DIMENSION],
         }
     )
     

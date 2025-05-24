@@ -1,3 +1,4 @@
+from schema import TaskIoField
 from taskkit.base_task import AppIdempotentBaseTask
 
 
@@ -6,14 +7,13 @@ class GreetingTask(AppIdempotentBaseTask):
     Task to send a greeting message.
     """
     name = 'greeting'
+    input_schema = [TaskIoField(name='name', type=str)]
+    output_schema = [TaskIoField(name='message', type=str)]
 
-    async def run(self) -> str:
+    async def run(self) -> dict:
         """
         Run the task to send a greeting message.
-
-        Returns:
-            str: The greeting message.
         """
-        name = self.payload.get('name')
-        message = f"Hello, {name}"
-        return message
+        name_value = self.payload.get('name', 'World')
+        message = f"Hello, {name_value}!"
+        return {'message': message}
